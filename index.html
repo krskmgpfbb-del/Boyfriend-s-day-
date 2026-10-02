@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Quest For Vansh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&family=Marcellus&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night: #0b0a24;
+    --night-2: #171340;
+    --night-3: #241d5c;
+    --gold: #e6c17a;
+    --gold-soft: #f0d9a6;
+    --lavender: #c9baff;
+    --cream: #f5efe3;
+    --mist: rgba(245,239,227,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background: radial-gradient(ellipse at 20% 10%, #241d5c 0%, #0b0a24 55%), var(--night);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    overflow-x:hidden;
+  }
+
+  #stars, #stars2, #stars3{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+  }
+
+  .wrap{
+    position:relative;
+    z-index:2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 18px;
+  }
+
+  .card{
+    width:100%;
+    max-width:560px;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family:'Jost', sans-serif;
+    letter-spacing: 0.35em;
+    text-transform:uppercase;
+    font-size:11px;
+    color: var(--lavender);
+    opacity:0.8;
+    margin-bottom: 18px;
+  }
+
+  h1{
+    font-family:'Marcellus', serif;
+    font-weight:400;
+    font-size: clamp(28px, 6vw, 44px);
+    margin: 0 0 10px;
+    color: var(--gold-soft);
+    letter-spacing: 0.02em;
+  }
+
+  .sub{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size: 19px;
+    color: var(--mist);
+    margin-bottom: 40px;
+    line-height:1.5;
+  }
+
+  /* the orb that fills as riddles are solved */
+  .orb-holder{
+    display:flex;
+    justify-content:center;
+    margin-bottom: 34px;
+  }
+  .orb{
+    width: 86px; height:86px;
+    border-radius:50%;
+    position:relative;
+    background: radial-gradient(circle at 35% 30%, rgba(230,193,122,0.25), rgba(11,10,36,0.9) 70%);
+    border: 1px solid rgba(230,193,122,0.35);
+    box-shadow: 0 0 30px rgba(201,186,255,0.15), inset 0 0 20px rgba(0,0,0,0.4);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .orb-fill{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    height: 0%;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold) 60%, #b98a3e);
+    border-radius: 0 0 50px 50px;
+    transition: height 1.1s cubic-bezier(.22,.9,.35,1);
+    opacity:0.85;
+  }
+  .orb-clip{
+    position:absolute; inset:0; border-radius:50%; overflow:hidden;
+  }
+  .orb-count{
+    position:relative; z-index:2;
+    font-family:'Marcellus', serif;
+    font-size:15px;
+    color: var(--cream);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  }
+
+  .panel{
+    background: linear-gradient(180deg, rgba(36,29,92,0.55), rgba(11,10,36,0.55));
+    border: 1px solid rgba(230,193,122,0.25);
+    border-radius: 18px;
+    padding: 34px 28px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+
+  .riddle-label{
+    font-size:11px;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color: var(--lavender);
+    margin-bottom: 16px;
+    opacity:0.85;
+  }
+
+  .riddle-text{
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(20px, 4.2vw, 25px);
+    line-height:1.55;
+    color: var(--cream);
+    margin: 0 0 28px;
+    min-height: 90px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .answer-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  input[type="text"]{
+    flex: 1 1 220px;
+    background: rgba(245,239,227,0.06);
+    border: 1px solid rgba(245,239,227,0.25);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--cream);
+    font-family:'Jost', sans-serif;
+    font-size:15px;
+    outline:none;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  input[type="text"]::placeholder{ color: rgba(245,239,227,0.35); }
+  input[type="text"]:focus{
+    border-color: var(--gold);
+    background: rgba(245,239,227,0.1);
+  }
+  input[type="text"]:focus-visible{
+    outline: 2px solid var(--gold-soft);
+    outline-offset: 2px;
+  }
+
+  button{
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    border: none;
+    border-radius: 10px;
+    padding: 13px 22px;
+    font-family:'Jost', sans-serif;
+    font-weight:500;
+    font-size:14px;
+    letter-spacing:0.03em;
+    color: #241d5c;
+    cursor:pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  button:hover{ transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,193,122,0.35); }
+  button:focus-visible{ outline: 2px solid var(--cream); outline-offset:2px; }
+
+  .hint{
+    margin-top:16px;
+    font-size:13px;
+    color: rgba(201,186,255,0.75);
+    min-height: 18px;
+  }
+
+  .hint.shake{
+    animation: shake 0.4s;
+    color: #f0a6a6;
+  }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-6px); }
+    75%{ transform: translateX(6px); }
+  }
+
+  .progress-dots{
+    display:flex; gap:8px; justify-content:center; margin-top:24px;
+  }
+  .dot{
+    width:7px; height:7px; border-radius:50%;
+    background: rgba(245,239,227,0.2);
+    transition: background 0.4s, transform 0.4s;
+  }
+  .dot.done{ background: var(--gold); transform: scale(1.2); }
+
+  /* final reveal */
+  .finale{
+    display:none;
+  }
+  .finale.show{ display:block; animation: fadeUp 1s ease; }
+  @keyframes fadeUp{
+    from{ opacity:0; transform: translateY(18px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .seal{
+    width:64px;height:64px;border-radius:50%;
+    margin: 0 auto 22px;
+    background: radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold) 55%, #8a6a2c 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Marcellus', serif;
+    color:#241d5c;
+    font-size:22px;
+    box-shadow: 0 0 40px rgba(230,193,122,0.5);
+  }
+
+  .letter{
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(21px, 4.5vw, 27px);
+    line-height:1.7;
+    color: var(--cream);
+    padding: 6px 6px 0;
+  }
+
+  .letter .from{
+    display:block;
+    margin-top: 22px;
+    font-style:italic;
+    color: var(--lavender);
+    font-size: 17px;
+  }
+
+  .restart{
+    margin-top: 30px;
+    background:none;
+    border: 1px solid rgba(245,239,227,0.3);
+    color: var(--mist);
+  }
+  .restart:hover{ box-shadow:none; border-color: var(--gold); color: var(--gold-soft); }
+
+  .quest.hidden{ display:none; }
+
+  .continue-btn{
+    display:block;
+    margin: 14px auto 0;
+    background: none;
+    border: 1px solid rgba(230,193,122,0.5);
+    color: var(--gold-soft);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+  }
+  .continue-btn:hover{ box-shadow: 0 6px 20px rgba(230,193,122,0.25); }
+
+  .teddy-page{
+    display:none;
+  }
+  .teddy-page.show{
+    display:block;
+    animation: fadeUp 1s ease;
+  }
+
+  .teddy-holder{
+    display:flex;
+    justify-content:center;
+    margin: 30px 0 26px;
+  }
+
+  .teddy-btn{
+    background: radial-gradient(circle at 35% 30%, rgba(230,193,122,0.15), rgba(11,10,36,0.4) 75%);
+    border: 1px solid rgba(230,193,122,0.3);
+    border-radius: 50%;
+    width: 140px; height: 140px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    box-shadow: 0 0 40px rgba(201,186,255,0.15);
+    animation: bob 3s ease-in-out infinite;
+  }
+  .teddy-btn:hover{ box-shadow: 0 0 55px rgba(230,193,122,0.35); }
+  .teddy-btn:active{ transform: scale(0.94); }
+  .teddy-btn:focus-visible{ outline: 2px solid var(--gold-soft); outline-offset: 4px; }
+
+  .teddy-emoji{
+    font-size: 68px;
+    line-height:1;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.4));
+  }
+
+  @keyframes bob{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(-8px); }
+  }
+
+  .teddy-note{
+    display:none;
+  }
+  .teddy-note.show{
+    display:block;
+    animation: fadeUp 0.9s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="wrap">
+  <div class="card">
+    <div class="eyebrow">A quest, cast into the stars</div>
+    <h1>For Vansh</h1>
+    <p class="sub">Five riddles stand between you and something true.<br>Answer with your heart, not your head.</p>
+
+    <div class="orb-holder">
+      <div class="orb">
+        <div class="orb-clip"><div class="orb-fill" id="orbFill"></div></div>
+        <div class="orb-count" id="orbCount">0 / 3</div>
+      </div>
+    </div>
+
+    <div class="quest" id="quest">
+      <div class="panel">
+        <div class="riddle-label" id="riddleLabel">Riddle I</div>
+        <p class="riddle-text" id="riddleText"></p>
+        <div class="answer-row">
+          <input type="text" id="answerInput" placeholder="Whisper your answer..." autocomplete="off">
+          <button id="submitBtn">Unlock</button>
+        </div>
+        <div class="hint" id="hintText"></div>
+      </div>
+      <div class="progress-dots" id="progressDots"></div>
+    </div>
+
+    <div class="finale" id="finale">
+      <div class="seal">V</div>
+      <div class="panel">
+        <p class="letter">
+          I love you, and you know I do.<br>
+          No matter what happens between us…<br>
+          for me, you'll be the best boyfriend ever.
+          <span class="from">— always, in every version of us</span>
+        </p>
+      </div>
+      <button class="restart" id="restartBtn">Cast the spell again</button>
+      <button class="continue-btn" id="continueBtn">Wait, there's one more thing →</button>
+    </div>
+
+    <div class="teddy-page" id="teddyPage">
+      <div class="eyebrow">One last thing</div>
+      <h1 style="font-size: clamp(24px, 5vw, 34px);">A little someone wants to talk to you</h1>
+      <p class="sub" id="teddyPrompt">He's been waiting quietly. Go on, give him a tap.</p>
+
+      <div class="teddy-holder">
+        <button class="teddy-btn" id="teddyBtn" aria-label="Tap the teddy bear">
+          <span class="teddy-emoji">🧸</span>
+        </button>
+      </div>
+
+      <div class="teddy-note" id="teddyNote">
+        <div class="panel">
+          <p class="letter">
+            This cute teddy wants to tell you that I do appreciate your efforts,<br>
+            and I still am sorry for it, y'know I am. <span style="color:var(--gold-soft);">❤️</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- starfield ----------
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let w, h, stars;
+
+function initStars(){
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+  const count = Math.floor((w*h)/9000);
+  stars = Array.from({length: count}, () => ({
+    x: Math.random()*w,
+    y: Math.random()*h,
+    r: Math.random()*1.3 + 0.2,
+    tw: Math.random()*Math.PI*2,
+    speed: Math.random()*0.02 + 0.005
+  }));
+}
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function drawStars(){
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#f5efe3';
+  for(const s of stars){
+    const alpha = reduceMotion ? 0.6 : (0.4 + Math.sin(s.tw) * 0.4);
+    ctx.globalAlpha = Math.max(0.05, alpha);
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+    if(!reduceMotion) s.tw += s.speed;
+  }
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+
+window.addEventListener('resize', initStars);
+initStars();
+drawStars();
+
+// ---------- occasional sparkle burst ----------
+function sparkleBurst(){
+  const burst = document.createElement('div');
+  burst.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:5;';
+  document.body.appendChild(burst);
+  const n = 22;
+  for(let i=0;i<n;i++){
+    const p = document.createElement('div');
+    const angle = (Math.PI*2*i)/n + Math.random()*0.3;
+    const dist = 80 + Math.random()*160;
+    const x = window.innerWidth/2 + Math.cos(angle)*dist;
+    const y = window.innerHeight/2 + Math.sin(angle)*dist - 40;
+    p.style.cssText = `position:absolute; left:50%; top:45%; width:5px; height:5px; border-radius:50%;
+      background: radial-gradient(circle, #f0d9a6, transparent); opacity:1;
+      transition: transform 1.1s cubic-bezier(.15,.6,.3,1), opacity 1.1s ease;`;
+    burst.appendChild(p);
+    requestAnimationFrame(()=>{
+      p.style.transform = `translate(${x - window.innerWidth/2}px, ${y - window.innerHeight/2}px)`;
+      p.style.opacity = '0';
+    });
+  }
+  setTimeout(()=> burst.remove(), 1200);
+}
+
+// ---------- riddles ----------
+const riddles = [
+  {
+    label: "Riddle I",
+    text: "A funny memory, half-laughed about, half a secret: a certain someone used to supply weed, and there was a dog we talked about too. What was its name?",
+    answers: ["sheru"]
+  },
+  {
+    label: "Riddle II",
+    text: "SOMETHING THAT YOU OWN AND YOU ARE ACTUALLY PROUD OF IT (hint- its related to me, wanna have a piece of it?)",
+    answers: ["waist"]
+  },
+  {
+    label: "Riddle III",
+    text: "Three magical words. You love hearing them from me. What are they?",
+    answers: ["i love you", "ilu", "i love u"]
+  },
+  {
+    label: "Riddle IV",
+    text: "A place where everything began. Name it.",
+    answers: ["kashmir"]
+  },
+  {
+    label: "Riddle V",
+    text: "What could be my phone's password now?",
+    answers: ["1615"]
+  }
+];
+
+let current = 0;
+
+function normalize(str){
+  return str.trim().toLowerCase().replace(/[^\w\s]/g,'');
+}
+
+function loadRiddle(i){
+  const r = riddles[i];
+  document.getElementById('riddleLabel').textContent = r.label;
+  document.getElementById('riddleText').textContent = r.text;
+  document.getElementById('answerInput').value = '';
+  document.getElementById('hintText').textContent = '';
+  document.getElementById('hintText').classList.remove('shake');
+}
+
+function buildDots(){
+  const holder = document.getElementById('progressDots');
+  holder.innerHTML = '';
+  for(let i=0;i<riddles.length;i++){
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.id = 'dot'+i;
+    holder.appendChild(d);
+  }
+}
+
+function updateOrb(){
+  const pct = (current / riddles.length) * 100;
+  document.getElementById('orbFill').style.height = pct + '%';
+  document.getElementById('orbCount').textContent = current + ' / ' + riddles.length;
+  for(let i=0;i<riddles.length;i++){
+    document.getElementById('dot'+i).classList.toggle('done', i < current);
+  }
+}
+
+function checkAnswer(){
+  const val = normalize(document.getElementById('answerInput').value);
+  const r = riddles[current];
+  const correct = r.answers.some(a => val === a || (val.length > 3 && val.includes(a)));
+
+  if(correct){
+    sparkleBurst();
+    current++;
+    updateOrb();
+    if(current >= riddles.length){
+      setTimeout(()=>{
+        document.getElementById('quest').classList.add('hidden');
+        document.getElementById('finale').classList.add('show');
+        sparkleBurst();
+      }, 500);
+    } else {
+      setTimeout(()=> loadRiddle(current), 400);
+    }
+  } else {
+    const hint = document.getElementById('hintText');
+    hint.textContent = 'Not quite... let your memory wander back.';
+    hint.classList.remove('shake');
+    void hint.offsetWidth;
+    hint.classList.add('shake');
+  }
+}
+
+document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+document.getElementById('answerInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') checkAnswer();
+});
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  current = 0;
+  buildDots();
+  updateOrb();
+  loadRiddle(0);
+  document.getElementById('finale').classList.remove('show');
+  document.getElementById('quest').classList.remove('hidden');
+  document.getElementById('teddyPage').classList.remove('show');
+  document.getElementById('teddyNote').classList.remove('show');
+  document.getElementById('teddyBtn').style.display = '';
+  document.getElementById('teddyPrompt').style.display = '';
+});
+
+document.getElementById('continueBtn').addEventListener('click', ()=>{
+  document.getElementById('finale').classList.remove('show');
+  document.getElementById('teddyPage').classList.add('show');
+});
+
+document.getElementById('teddyBtn').addEventListener('click', ()=>{
+  sparkleBurst();
+  document.getElementById('teddyBtn').style.display = 'none';
+  document.getElementById('teddyPrompt').style.display = 'none';
+  document.getElementById('teddyNote').classList.add('show');
+});
+
+buildDots();
+loadRiddle(0);
+updateOrb();
+</script>
+
+</body>
+</html>
